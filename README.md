@@ -37,6 +37,7 @@ By doing so, it's basically as if we emulate a minimalist Android environment in
 - Open the apk with your zip explorer and extract the file `libswordigo.so` to `ux0:data/swordigo`. 
 - Extract the `assets` folder from the `.apk` inside `ux0:data/swordigo`.
 - Extract the `raw` folder from `res` folder of the `.apk` inside `ux0:data/swordigo`.
+- **Optional**: For trophies to be unlockable, install [NoTrpDrm](https://github.com/Rinnegatamante/NoTrpDrm).
 
 ## Build Instructions (For Developers)
 
