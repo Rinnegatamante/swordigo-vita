@@ -81,3 +81,4 @@ cmake .. && make
 
 - TheFloW for the original .so loader.
 - CatoTheYounger for the screenshots and for testing the homebrew.
+- BetterWinds for the Livearea assets.
