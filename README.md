@@ -9,6 +9,11 @@ By doing so, it's basically as if we emulate a minimalist Android environment in
 
 ## Changelog
 
+### v.1.1
+
+- Updated to latest vitaGL usage.
+- Greatly improved performances thanks to circular vertex pool usage in vitaGL.
+
 ### v.1.0
 
 - Initial Release.
