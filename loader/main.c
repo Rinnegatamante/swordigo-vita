@@ -43,8 +43,6 @@
 #include <AL/alext.h>
 #include <AL/efx.h>
 
-#include <lua.h>
-
 //#define ENABLE_DEBUG
 
 #ifdef ENABLE_DEBUG
@@ -869,6 +867,19 @@ long unsigned int *__gnu_Unwind_Find_exidx(long unsigned int *PC, int *pcount) {
 	return (main_mod.text_base + exidx_start);
 }
 
+ALCcontext  *al_context_id;
+ALCdevice   *al_device;
+
+ALCdevice *alcOpenDevice_hook(const ALCchar *devicename) {
+	printf("al_device is %x\n", al_device);
+	return al_device;
+}
+
+ALCcontext *alcCreateContext_hook(ALCdevice *device, const ALCint* attrlist) {
+	printf("al_context is %x\n", al_context_id);
+	return al_context_id;
+}
+
 static so_default_dynlib default_dynlib[] = {
 	{ "AAssetManager_fromJava", (uintptr_t)&ret1 },
 	{ "AAssetManager_open", (uintptr_t)&AAssetManager_open },
@@ -1248,14 +1259,14 @@ static so_default_dynlib default_dynlib[] = {
 	{ "alcCaptureStop", (uintptr_t)&alcCaptureStop },
 	{ "alcCaptureOpenDevice", (uintptr_t)&alcCaptureOpenDevice },
 	{ "alcCloseDevice", (uintptr_t)&alcCloseDevice },
-	{ "alcCreateContext", (uintptr_t)&alcCreateContext },
+	{ "alcCreateContext", (uintptr_t)&alcCreateContext_hook },
 	{ "alcGetContextsDevice", (uintptr_t)&alcGetContextsDevice },
 	{ "alcGetError", (uintptr_t)&alcGetError },
 	{ "alcGetIntegerv", (uintptr_t)&alcGetIntegerv },
 	{ "alcGetString", (uintptr_t)&alcGetString },
 	{ "alcMakeContextCurrent", (uintptr_t)&alcMakeContextCurrent },
 	{ "alcDestroyContext", (uintptr_t)&alcDestroyContext },
-	{ "alcOpenDevice", (uintptr_t)&alcOpenDevice },
+	{ "alcOpenDevice", (uintptr_t)&alcOpenDevice_hook },
 	{ "alcProcessContext", (uintptr_t)&alcProcessContext },
 	{ "alcPauseCurrentDevice", (uintptr_t)&ret0 },
 	{ "alcResumeCurrentDevice", (uintptr_t)&ret0 },
@@ -1887,7 +1898,25 @@ void *real_main(void *argv) {
 	}
 }
 
+int __real_sceAudioOutOpenPort(SceAudioOutPortType type, int len, int freq, SceAudioOutMode mode);
+int __wrap_sceAudioOutOpenPort(SceAudioOutPortType type, int len, int freq, SceAudioOutMode mode) {
+	if (len == 1024) {
+		type = SCE_AUDIO_OUT_PORT_TYPE_VOICE;
+	}
+	return __real_sceAudioOutOpenPort(type, len, freq, mode);
+}
+
 int main(int argc, char *argv[]) {
+	al_device = alcOpenDevice(NULL);
+	int attrlist[6];
+	attrlist[0] = ALC_FREQUENCY;
+	attrlist[1] = 48000;
+	attrlist[2] = ALC_SYNC;
+	attrlist[3] = AL_FALSE;
+	attrlist[4] = 0;
+
+	al_context_id = alcCreateContext(al_device, attrlist);
+	
 	pthread_t t;
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);

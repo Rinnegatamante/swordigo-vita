@@ -14,7 +14,7 @@ set(VITA_APP_NAME "Swordigo")
 set(VITA_TITLEID  "SWOR00001")
 set(VITA_MKSFOEX_FLAGS "-d ATTRIBUTE2=12")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wl,-q,--allow-multiple-definition -D_GNU_SOURCE -Wall -O3 -fdiagnostics-color=always -fno-optimize-sibling-calls -mfloat-abi=softfp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wl,-q,--wrap,sceAudioOutOpenPort,--allow-multiple-definition -D_GNU_SOURCE -Wall -O3 -fdiagnostics-color=always -fno-optimize-sibling-calls -mfloat-abi=softfp")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -Wno-write-strings -fpermissive -fno-rtti")
 
 add_executable(swordigo
@@ -29,7 +29,7 @@ add_executable(swordigo
 
 target_link_libraries(swordigo
   -Wl,--whole-archive pthread -Wl,--no-whole-archive
-  SDL2_mixer_ext
+  openal
   SDL2_image
   SDL2_ttf
   SDL2_net
@@ -53,7 +53,6 @@ target_link_libraries(swordigo
   vorbisfile
   ogg
   FLAC
-  openal
   imgui
   vitaGL
   vitashark
@@ -92,7 +91,7 @@ vita_create_vpk(swordigo.vpk ${VITA_TITLEID} eboot.bin
   NAME ${VITA_APP_NAME}
   FILE ${CMAKE_SOURCE_DIR}/livearea/icon0.png sce_sys/icon0.png
        ${CMAKE_SOURCE_DIR}/livearea/bg0.png sce_sys/livearea/contents/bg0.png
-       ${CMAKE_SOURCE_DIR}/extras/livearea/pic0.png sce_sys/pic0.png
+       ${CMAKE_SOURCE_DIR}/livearea/pic0.png sce_sys/pic0.png
        ${CMAKE_SOURCE_DIR}/livearea/startup.png sce_sys/livearea/contents/startup.png
        ${CMAKE_SOURCE_DIR}/livearea/template.xml sce_sys/livearea/contents/template.xml
        ${CMAKE_SOURCE_DIR}/livearea/TROPHY.TRP sce_sys/trophy/SWOR00001_00/TROPHY.TRP
