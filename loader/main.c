@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <wchar.h>
 #include <wctype.h>
@@ -57,6 +58,7 @@ extern void play_music();
 extern void set_music_loop(int looping);
 extern void set_music_volume(float vol);
 extern void stop_music();
+extern void pause_music(void);
 
 extern const char *BIONIC_ctype_;
 extern const short *BIONIC_tolower_tab_;
@@ -592,7 +594,6 @@ extern void *__cxa_finalize;
 extern void *__cxa_call_unexpected;
 extern void *__gnu_unwind_frame;
 extern void *__stack_chk_fail;
-int open(const char *pathname, int flags);
 
 static int chk_guard = 0x42424242;
 static int *__stack_chk_guard_fake = &chk_guard;
@@ -818,7 +819,7 @@ void *dlsym_hook( void *handle, const char *symbol);
 
 void *dlopen_hook(const char *filename, int flags) {
 	printf("dlopen %s\n", filename);
-	return 1;
+	return (void *)(uintptr_t)1;
 }
 
 int AAssetManager_open(void *mgr, const char *fname, int mode) {
@@ -864,7 +865,7 @@ uint32_t exidx_end = 0x42A788;
 uint32_t exidx_start = 0x410FF8;
 long unsigned int *__gnu_Unwind_Find_exidx(long unsigned int *PC, int *pcount) {
 	*pcount = (exidx_end - exidx_start) / 8;
-	return (main_mod.text_base + exidx_start);
+	return (long unsigned int *)(main_mod.text_base + exidx_start);
 }
 
 ALCcontext  *al_context_id;
@@ -1300,7 +1301,7 @@ void *dlsym_hook( void *handle, const char *symbol) {
 	printf("dlsym %s\n", symbol);
 	for (size_t i = 0; i < numhooks; ++i) {
 		if (!strcmp(symbol, default_dynlib[i].symbol)) {
-			return default_dynlib[i].func;
+			return (void *)default_dynlib[i].func;
 		}
 	}
 	return vglGetProcAddress(symbol);
@@ -1414,7 +1415,7 @@ void unlock_achievement(char *name, int progress, int locked) {
 void CallStaticVoidMethodV(void *env, void *obj, int methodID, uintptr_t *args) {
 	switch (methodID) {
 	case REPORT_ACHIEVEMENT_PROGRESS:
-		unlock_achievement(args[0], args[1], args[2]);
+		unlock_achievement((char *)args[0], args[1], args[2]);
 		break;
 	default:
 		break;
@@ -1502,7 +1503,7 @@ int CallBooleanMethodV(void *env, void *obj, int methodID, uintptr_t *args) {
 	switch (methodID) {
 	case LOAD_FILE:
 		//printf("load file %s\n", args[0]);
-		load_music(args[0]);
+		load_music((const char *)args[0]);
 		return 1;
 	default:
 		return 0;
@@ -1512,7 +1513,7 @@ int CallBooleanMethodV(void *env, void *obj, int methodID, uintptr_t *args) {
 void *CallObjectMethodV(void *env, void *obj, int methodID, uintptr_t *args) {
 	switch (methodID) {
 	default:
-		return 0x34343434;
+		return (void *)(uintptr_t)0x34343434;
 	}
 }
 

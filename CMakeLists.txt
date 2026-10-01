@@ -10,6 +10,13 @@ endif()
 
 project(swordigo C CXX)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2_image REQUIRED IMPORTED_TARGET SDL2_image)
+pkg_check_modules(SDL2_ttf REQUIRED IMPORTED_TARGET SDL2_ttf)
+pkg_check_modules(SDL2_net REQUIRED IMPORTED_TARGET SDL2_net)
+pkg_check_modules(sndfile REQUIRED IMPORTED_TARGET sndfile)
+pkg_check_modules(vorbisfile REQUIRED IMPORTED_TARGET vorbisfile)
+pkg_check_modules(openal REQUIRED IMPORTED_TARGET openal)
 set(VITA_APP_NAME "Swordigo")
 set(VITA_TITLEID  "SWOR00001")
 set(VITA_MKSFOEX_FLAGS "-d ATTRIBUTE2=12")
@@ -27,14 +34,21 @@ add_executable(swordigo
   loader/trophies.c
 )
 
+
 target_link_libraries(swordigo
-  -Wl,--whole-archive pthread -Wl,--no-whole-archive
+  -pthread
+  PkgConfig::SDL2_image
+  PkgConfig::SDL2_ttf
+  PkgConfig::SDL2_net
+  PkgConfig::sndfile
+  PkgConfig::vorbisfile
+  PkgConfig::openal
   openal
   SDL2_image
   SDL2_ttf
   SDL2_net
   freetype
-  soloud_static
+  soloud
   SDL2
   png
   webp
@@ -46,7 +60,7 @@ target_link_libraries(swordigo
   z
   m
   stdc++
-  opensles
+  OpenSLES
   sndfile
   vorbis
   vorbisenc
@@ -74,7 +88,6 @@ target_link_libraries(swordigo
   SceFios2_stub
   SceGxm_stub
   SceIme_stub
-  SceLibcBridge_stub
   SceShaccCg_stub
   SceSysmodule_stub
   ScePower_stub
@@ -82,7 +95,7 @@ target_link_libraries(swordigo
   SceMotion_stub
   SceHid_stub
   SceVshBridge_stub
-  SceKernelDmacmgr_stub
+  SceKernelDmacMgr_stub
 )
 
 vita_create_self(eboot.bin swordigo UNSAFE)
@@ -96,3 +109,7 @@ vita_create_vpk(swordigo.vpk ${VITA_TITLEID} eboot.bin
        ${CMAKE_SOURCE_DIR}/livearea/template.xml sce_sys/livearea/contents/template.xml
        ${CMAKE_SOURCE_DIR}/livearea/TROPHY.TRP sce_sys/trophy/SWOR00001_00/TROPHY.TRP
 )
+
+set_property(SOURCE loader/so_util.c APPEND PROPERTY COMPILE_OPTIONS -Wno-error=return-mismatch -Wno-error=incompatible-pointer-types)
+
+set_property(SOURCE loader/main.c APPEND PROPERTY COMPILE_OPTIONS -std=gnu17)
